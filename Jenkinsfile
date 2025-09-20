@@ -19,12 +19,40 @@ pipeline {
                 }
             }
         }
+         stage('Test Backend') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t ${BACKEND_IMAGE}-backend-test:${BUILD_ID} .'
+                    sh '''
+                        docker run --rm \
+                        -e DB_USER=test \
+                        -e DB_PASSWORD=test \
+                        -e DB_HOST=test \
+                        -e DB_NAME=test \
+                        -e DB_PORT=5432 \
+                        ${APP_NAME}-backend-test:${BUILD_ID} \
+                        npm test
+                    '''
+                }
+            }
+        }
 
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
                     sh 'docker build -t ${FRONTEND_IMAGE}:${BUILD_ID} .'
                 }
+            }
+        }
+        stage('Run Integration Tests') {
+            steps {
+                sh 'docker-compose -f docker-compose.test.yml up -d'
+                sleep time: 30, unit: 'SECONDS'
+                sh '''
+                    curl -f http://localhost:5000/api/health || exit 1
+                    curl -f http://localhost/api/health || exit 1
+                '''
+                sh 'docker-compose -f docker-compose.test.yml down'
             }
         }
 

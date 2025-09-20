@@ -1,45 +1,61 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   db:
     image: postgres:13-alpine
+    container_name: taskmanager-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: todo
+      POSTGRES_DB: taskmanager
     volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Backend API
   backend:
     build: ./backend
+    container_name: taskmanager-backend
     environment:
       DB_USER: postgres
       DB_PASSWORD: password
       DB_HOST: db
-      DB_NAME: todo
+      DB_NAME: taskmanager
       DB_PORT: 5432
+      PORT: 5000
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
+    restart: unless-stopped
 
+  # Frontend
   frontend:
     build: ./frontend
+    container_name: taskmanager-frontend
     ports:
       - "80:80"
     depends_on:
       - backend
     networks:
       - app-network
+    restart: unless-stopped
 
+# Networks
 networks:
   app-network:
     driver: bridge
 
+# Volumes
 volumes:
-  db_data:
+  postgres_data:

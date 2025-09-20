@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task Manager</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .task-form {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+      .task-form input, .task-form textarea {
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .task-form button {
+        padding: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .tasks-list {
+        display: grid;
+        gap: 10px;
+      }
+      .task {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 4px;
+        position: relative;
+      }
+      .task.completed {
+        background-color: #f0f9f0;
+        border-left: 4px solid #4CAF50;
+      }
+      .task.pending {
+        background-color: #fff9f0;
+        border-left: 4px solid #ff9800;
+      }
+      .task-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+      }
+      .task-actions button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .task-actions .complete {
+        background-color: #4CAF50;
+        color: white;
+      }
+      .task-actions .pending {
+        background-color: #ff9800;
+        color: white;
+      }
+      .task-actions .delete {
+        background-color: #f44336;
+        color: white;
+      }
+      .status {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 12px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

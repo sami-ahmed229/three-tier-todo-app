@@ -1,82 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [task, setTask] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
-    fetchTodos();
+    fetchTasks();
   }, []);
 
-  const fetchTodos = async () => {
+  const fetchTasks = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/todos`);
-      setTodos(response.data);
+      const response = await axios.get(`${API_BASE}/api/tasks`);
+      setTasks(response.data);
     } catch (error) {
-      console.error('Error fetching todos:', error);
+      console.error('Error fetching tasks:', error);
     }
   };
 
-  const addTodo = async (e) => {
+  const addTask = async (e) => {
     e.preventDefault();
-    if (!task) return;
     try {
-      const response = await axios.post(`${API_URL}/api/todos`, { task });
-      setTodos([...todos, response.data]);
-      setTask('');
+      await axios.post(`${API_BASE}/api/tasks`, { title, description });
+      setTitle('');
+      setDescription('');
+      fetchTasks();
     } catch (error) {
-      console.error('Error adding todo:', error);
+      console.error('Error adding task:', error);
     }
   };
 
-  const toggleTodo = async (id, currentStatus) => {
+  const updateTask = async (task) => {
     try {
-      const response = await axios.put(`${API_URL}/api/todos/${id}`, {
-        is_completed: !currentStatus
+      await axios.put(`${API_BASE}/api/tasks/${task.id}`, {
+        title: task.title,
+        description: task.description,
+        status: task.status === 'completed' ? 'pending' : 'completed'
       });
-      setTodos(todos.map(todo => (todo.id === id ? response.data : todo)));
+      fetchTasks();
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error('Error updating task:', error);
     }
   };
 
-  const deleteTodo = async (id) => {
+  const deleteTask = async (id) => {
     try {
-      await axios.delete(`${API_URL}/api/todos/${id}`);
-      setTodos(todos.filter(todo => todo.id !== id));
+      await axios.delete(`${API_BASE}/api/tasks/${id}`);
+      fetchTasks();
     } catch (error) {
-      console.error('Error deleting todo:', error);
+      console.error('Error deleting task:', error);
     }
   };
 
   return (
-    <div className="App">
-      <h1>Todo App</h1>
-      <form onSubmit={addTodo}>
+    <div className="container">
+      <h1>Task Manager</h1>
+      
+      <form onSubmit={addTask} className="task-form">
         <input
           type="text"
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          placeholder="Enter a new task"
+          placeholder="Task title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
         />
-        <button type="submit">Add</button>
+        <textarea
+          placeholder="Task description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <button type="submit">Add Task</button>
       </form>
-      <ul>
-        {todos.map(todo => (
-          <li key={todo.id}>
-            <span
-              style={{ textDecoration: todo.is_completed ? 'line-through' : 'none' }}
-              onClick={() => toggleTodo(todo.id, todo.is_completed)}
-            >
-              {todo.task}
-            </span>
-            <button onClick={() => deleteTodo(todo.id)}>Delete</button>
-          </li>
+
+      <div className="tasks-list">
+        {tasks.map((task) => (
+          <div key={task.id} className={`task ${task.status}`}>
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+            <div className="task-actions">
+              <button 
+                onClick={() => updateTask(task)}
+                className={task.status === 'completed' ? 'pending' : 'complete'}
+              >
+                {task.status === 'completed' ? 'Mark Pending' : 'Mark Complete'}
+              </button>
+              <button onClick={() => deleteTask(task.id)} className="delete">
+                Delete
+              </button>
+            </div>
+            <span className="status">Status: {task.status}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
